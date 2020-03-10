@@ -9,6 +9,7 @@ public class SimpFile {
     public static String commonSeparator = "/";
     private String relativePath;
     private String stringContent;
+    private String originalFilename;
     private String stringContentEncoding = "UTF-8";
 
     /*数据库存储属性*/
@@ -135,5 +136,13 @@ public class SimpFile {
 
     public void setFileOperationException(Exception fileOperationException) {
         this.fileOperationException = fileOperationException;
+    }
+
+    public String getOriginalFilename() {
+        return originalFilename;
+    }
+
+    public void setOriginalFilename(String originalFilename) {
+        this.originalFilename = originalFilename;
     }
 }

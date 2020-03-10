@@ -296,15 +296,17 @@ public class FileUtils {
             String originalFilename = multipartFile.getOriginalFilename();
             String fileExt = originalFilename.substring(originalFilename.lastIndexOf("."), originalFilename.length());
 
-            File file = makeSureFileExists(tempWorkSpace + SimpFile.commonSeparator + originalFilename);
+            String tempName = "" + UUID.randomUUID();
+            File file = makeSureFileExists(tempWorkSpace + SimpFile.commonSeparator + tempName);
             tempfiles.add(file);
             multipartFile.transferTo(file);
 
             form.add("files", new FileSystemResource(file));
             SimpFile simpFile = new SimpFile();
-            simpFile.setRelativePath(relativePathPrefix + SimpFile.commonSeparator + UUID.randomUUID() + fileExt);
+            simpFile.setRelativePath(relativePathPrefix + SimpFile.commonSeparator + tempName + fileExt);
             simpFile.setPath(appWorkSpace + simpFile.getRelativePath());
-            simpleFiles.put(originalFilename, simpFile);
+            simpFile.setOriginalFilename(originalFilename);
+            simpleFiles.put(tempName, simpFile);
         }
 
         form.add("simpleFilesJsonStr", JSON.toJSON(simpleFiles));
@@ -319,8 +321,12 @@ public class FileUtils {
 
         ResultInfo<SimpFile> resultInfo = JSON.parseObject(responseEntity.getBody(), new TypeReference<ResultInfo<SimpFile>>() {
         });
-        return resultInfo.getBeanMap();
-
+        Map<String, SimpFile> beanMap = resultInfo.getBeanMap();
+        Map<String, SimpFile> result = new HashMap<>();
+        for (SimpFile value : beanMap.values()) {
+            result.put(value.getOriginalFilename(), value);
+        }
+        return result;
     }
 
     public void remoteRead(SimpFile simpFile, HttpServletResponse response) throws Exception {
