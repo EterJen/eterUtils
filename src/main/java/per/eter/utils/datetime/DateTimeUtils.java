@@ -25,6 +25,10 @@ public enum DateTimeUtils {
     DATE_UNDERLINE("yyyy_MM_dd"),
 
     /**
+     * 日期格式 <code>[yyyy_MM_dd]</code>
+     */
+    DATE_CN("yyyy年M月d日"),
+    /**
      * 时间格式 <code>[HH:mm:ss]</code>
      */
     TIME("HH:mm:ss"),
@@ -640,6 +644,12 @@ public enum DateTimeUtils {
         //使用DateTimeFormatter获取当前周数
         WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
         LocalDateTime localDateTime = date2Ldt(date);
+        return localDateTime.get(weekFields.weekOfYear());
+    }
+
+    public static  int weekOfYear(LocalDateTime localDateTime) {
+        //使用DateTimeFormatter获取当前周数
+        WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
         return localDateTime.get(weekFields.weekOfYear());
     }
 

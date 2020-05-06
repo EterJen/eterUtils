@@ -174,6 +174,7 @@ public class FileUtils {
     public static void localDownload(SimpFile simpFile, HttpServletResponse response) throws Exception {
         String downloadName = StringUtils.changeEncode(simpFile.getDownloadName(), "UTF-8");
         log.info("下载文件名称: {} ", downloadName);
+        downloadName = URLEncoder.encode(downloadName, "UTF-8");
         downloadName = downloadName.replaceAll("\\+", "%20");
         response.setHeader("content-disposition", "attachment;filename*=UTF-8''" + downloadName);
         response.setContentType("application/force-download;charset=utf-8");
@@ -329,10 +330,44 @@ public class FileUtils {
         return result;
     }
 
+    public Map<String, SimpFile> remoteUpload(SimpFile[] simpFiles, String relativePathPrefix) throws IOException {
+        String tempWorkSpace = appWorkSpace + SimpFile.commonSeparator + "remoteUploadTemp";
+
+        Calendar currentCalendar = Calendar.getInstance();
+        relativePathPrefix = relativePathPrefix + SimpFile.commonSeparator + currentCalendar.get(Calendar.YEAR) + "_" + (currentCalendar.get(Calendar.MONTH) + 1) + "_" + currentCalendar.get(Calendar.DAY_OF_MONTH);
+
+
+        Map<String, SimpFile> simpleFiles = new HashMap<>();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        headers.setContentType(MediaType.parseMediaType("multipart/form-data;charset=UTF-8"));
+        MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
+
+        for (SimpFile simpFile : simpFiles) {
+            form.add("files", new FileSystemResource(new File(simpFile.getPath())));
+            simpFile.setRelativePath(relativePathPrefix + SimpFile.commonSeparator + simpFile.getUuidName() + simpFile.getNameSuffix());
+            simpFile.setPath(appWorkSpace + simpFile.getRelativePath());
+            simpleFiles.put(simpFile.getOriginalFilename(), simpFile);
+        }
+
+        form.add("simpleFilesJsonStr", JSON.toJSON(simpleFiles));
+        HttpEntity<MultiValueMap<String, Object>> httpEntity = new HttpEntity<>(form, headers);
+
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(fileOpHost + FileOpController.localUploadUri, httpEntity, String.class);
+
+
+        ResultInfo<SimpFile> resultInfo = JSON.parseObject(responseEntity.getBody(), new TypeReference<ResultInfo<SimpFile>>() {
+        });
+        return  resultInfo.getBeanMap();
+    }
+
     public void remoteRead(SimpFile simpFile, HttpServletResponse response) throws Exception {
         restTemplate.execute(fileOpHost + FileOpController.localReadUri + simpFile.getRelativePath(), HttpMethod.GET, null, clientHttpResponse -> {
+
             String downloadName = StringUtils.changeEncode(simpFile.getDownloadName(), "UTF-8");
             log.info("下载文件名称: {} ", downloadName);
+            downloadName = URLEncoder.encode(downloadName, "UTF-8");
             downloadName = downloadName.replaceAll("\\+", "%20");
             response.setHeader("content-disposition", "attachment;filename*=UTF-8''" + downloadName);
             response.setContentType("application/force-download;charset=utf-8");

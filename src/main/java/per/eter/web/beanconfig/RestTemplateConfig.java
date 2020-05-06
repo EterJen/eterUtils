@@ -24,8 +24,8 @@ public class RestTemplateConfig {
     public HttpComponentsClientHttpRequestFactory clientHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         clientHttpRequestFactory.setHttpClient(httpClient());
-        clientHttpRequestFactory.setReadTimeout(10000);//单位为ms
-        clientHttpRequestFactory.setConnectTimeout(10000);//单位为ms
+        clientHttpRequestFactory.setReadTimeout(10000);//读取超时 单位为ms
+        clientHttpRequestFactory.setConnectTimeout(5000);//链接超时 单位为ms
         return clientHttpRequestFactory;
     }
 

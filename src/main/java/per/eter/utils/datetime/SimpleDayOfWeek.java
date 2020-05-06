@@ -1,9 +1,9 @@
 package per.eter.utils.datetime;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,6 +14,7 @@ import static per.eter.utils.datetime.DateTimeUtils.*;
 public class SimpleDayOfWeek {
     private LocalDateTime startLocalDateTime;
     private LocalDateTime endLocalDateTime;
+    private long dayDurationNow;
 
     private DayOfWeek dayOfWeek;
     private String dayOfWeekZh;
@@ -26,6 +27,15 @@ public class SimpleDayOfWeek {
         this.dayOfWeek = dayOfWeek;
         this.setDayOfWeekZh();
         this.setDateStr();
+        this.setDayDurationNow();
+    }
+
+    private void setDayDurationNow() {
+        LocalDateTime localDateTime = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime startLocalDateTime = this.getStartLocalDateTime();
+        Duration duration = Duration.between(localDateTime, startLocalDateTime);
+        long l = duration.toDays();
+        this.setDayDurationNow(l);
     }
 
     public void setDateStr() {
@@ -47,7 +57,7 @@ public class SimpleDayOfWeek {
     }
 
     public static ArrayList<String> dateStrsOfRange(Date startDateTime, Date endDateTime) {
-        return dateStrsOfRange(date2Ldt(startDateTime),date2Ldt(endDateTime));
+        return dateStrsOfRange(date2Ldt(startDateTime), date2Ldt(endDateTime));
     }
 
     public void setDayOfWeekZh() {

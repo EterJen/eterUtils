@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import per.eter.utils.file.FileUtils;
 import per.eter.utils.file.SimpFile;
@@ -16,8 +13,6 @@ import per.eter.web.common.ResultInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,7 +41,7 @@ public class FileOpController {
 
     @RequestMapping("/file2String")
     public SimpFile file2String(@RequestBody SimpFile simpFile) throws Exception {
-       return fileOpService.file2String(simpFile);
+        return fileOpService.file2String(simpFile);
     }
 
     @RequestMapping("/localDownload")
@@ -66,6 +61,23 @@ public class FileOpController {
         simpFile.setRelativePath(servletPath.replace(FileOpController.remoteReadUri, ""));
         simpFile.setDownloadUrl(fileOpHost + FileOpController.localReadUri);
 
+        fileUtils.remoteRead(simpFile, response);
+    }
+
+    @RequestMapping("/remoteUpload")
+    public Map<String, SimpFile> remoteUpload(@RequestParam("files") MultipartFile[] multipartFiles, @RequestParam("relativePathPrefix") String relativePathPrefix) throws Exception {
+        return fileUtils.remoteUpload(multipartFiles, relativePathPrefix);
+    }
+
+    @RequestMapping("/remoteDownload")
+    public void remoteDownload(HttpServletRequest httpServletRequest, HttpServletResponse response) throws Exception {
+        SimpFile simpFile = new SimpFile();
+        Map<String, String[]> parameterMap = httpServletRequest.getParameterMap();
+        for (Map.Entry<String, String[]> stringEntry : parameterMap.entrySet()) {
+            String key = stringEntry.getKey();
+            String[] value = stringEntry.getValue();
+            org.apache.commons.beanutils.BeanUtils.setProperty(simpFile, key, value[0]);
+        }
         fileUtils.remoteRead(simpFile, response);
     }
 

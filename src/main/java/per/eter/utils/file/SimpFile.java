@@ -1,5 +1,7 @@
 package per.eter.utils.file;
 
+import org.springframework.util.StringUtils;
+
 public class SimpFile {
     /*本地属性*/
     private String path;
@@ -11,6 +13,9 @@ public class SimpFile {
     private String stringContent;
     private String originalFilename;
     private String stringContentEncoding = "UTF-8";
+    private String uuidName;
+    private String nameSuffix;
+    private String nameWithoutSuffix;
 
     /*数据库存储属性*/
     private String name;
@@ -144,5 +149,32 @@ public class SimpFile {
 
     public void setOriginalFilename(String originalFilename) {
         this.originalFilename = originalFilename;
+    }
+
+    public String getNameSuffix() {
+        return nameSuffix;
+    }
+
+    public void setNameSuffix(String nameSuffix) {
+        this.nameSuffix = nameSuffix;
+    }
+
+    public String getNameWithoutSuffix() {
+        if (StringUtils.isEmpty(nameWithoutSuffix) && !StringUtils.isEmpty(originalFilename)) {
+            this.setNameWithoutSuffix(originalFilename.substring(0,originalFilename.lastIndexOf(".")));
+        }
+        return nameWithoutSuffix;
+    }
+
+    public void setNameWithoutSuffix(String nameWithoutSuffix) {
+        this.nameWithoutSuffix = nameWithoutSuffix;
+    }
+
+    public String getUuidName() {
+        return uuidName;
+    }
+
+    public void setUuidName(String uuidName) {
+        this.uuidName = uuidName;
     }
 }
