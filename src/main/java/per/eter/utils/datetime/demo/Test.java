@@ -2,14 +2,18 @@ package per.eter.utils.datetime.demo;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.springframework.context.annotation.Bean;
 import per.eter.utils.datetime.DateTimeUtils;
-import per.eter.utils.datetime.SimpleDayOfWeek;
+import per.eter.utils.datetime.SimpleDay;
+import per.eter.utils.datetime.SimpleMonth;
 import per.eter.utils.datetime.SimpleWeek;
 import per.eter.utils.file.SimpFile;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +46,7 @@ public class Test {
         LocalDateTime localDateTime1 = localDateTime.plusDays(2);
         System.out.println(DateTimeUtils.DATE_TIME.format(localDateTime1));
 
-        ArrayList<String> strings = SimpleDayOfWeek.dateStrsOfRange(localDateTime, localDateTime1);
+        ArrayList<String> strings = SimpleDay.dateStrsOfRange(localDateTime, localDateTime1);
 
         System.out.println(strings);
     }
@@ -65,12 +69,19 @@ public class Test {
         System.out.println(JSON.toJSONString(simpleWeek1,true));
     }
 
-    public static void main(String[] args) {
+    public static void main4(String[] args) {
         LocalDateTime now1 = LocalDateTime.now();
         LocalDateTime localDateTime = now1.withMonth(12).withDayOfMonth(33).withHour(22).withMinute(2);
         System.out.println(DateTimeUtils.DATE_CN.formatDate(DateTimeUtils.ldt2Date(now1)));
         String formatNow = DateTimeUtils.DATE_CN.formatDate(DateTimeUtils.ldt2Date(localDateTime));
         System.out.println(formatNow);
+    }
+
+    public static void main(String[] args) {
+
+        SimpleMonth simpleMonth = new SimpleMonth(LocalDateTime.now());
+        String s = JSON.toJSONString(simpleMonth);
+        System.out.println(s);
     }
 
 }

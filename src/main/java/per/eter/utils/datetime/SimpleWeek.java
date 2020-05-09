@@ -1,18 +1,16 @@
 package per.eter.utils.datetime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.Data;
 import per.eter.utils.number.Num2CN;
 
+import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 @Data
-public class SimpleWeek {
+public class SimpleWeek implements Serializable {
     //@JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     //@JsonProperty("start_time")
@@ -27,7 +25,7 @@ public class SimpleWeek {
     private int weekOfYear;
     private String weekOfYearStr;
     private boolean currentWeek;
-    private ArrayList<SimpleDayOfWeek> daysOfWeek = new ArrayList<>();
+    private ArrayList<SimpleDay> daysOfWeek = new ArrayList<>();
 
     public SimpleWeek(SimpleWeek simpleWeek) {
         this.relativeLocalDateTime = simpleWeek.relativeLocalDateTime;
@@ -38,7 +36,7 @@ public class SimpleWeek {
 
         DayOfWeek[] dayOfWeeks = DayOfWeek.values();
         for (DayOfWeek dayOfWeek : dayOfWeeks) {
-            daysOfWeek.add(new SimpleDayOfWeek(simpleWeek, dayOfWeek));
+            daysOfWeek.add(new SimpleDay(simpleWeek, dayOfWeek));
         }
         this.setWeekOfYear();
 

@@ -625,14 +625,20 @@ public enum DateTimeUtils {
 
 
     public static  LocalDateTime dayOfWeek(LocalDateTime localDateTime, long weekOffset, TemporalAdjuster dayOfWeek, int hour, int minute, int second) {
-        return localDateTime.with(dayOfWeek).withHour(hour).withMinute(minute).withSecond(second).plusWeeks(weekOffset);
+        return localDateTime.with(dayOfWeek).withNano(0).withHour(hour).withMinute(minute).withSecond(second).plusWeeks(weekOffset);
     }
 
 
+    public static  LocalDateTime dayOfMonth(LocalDateTime localDateTime, long offset, TemporalAdjuster adjuster, int hour, int minute, int second) {
+        return localDateTime.with(adjuster).withNano(0).withHour(hour).withMinute(minute).withSecond(second).plusMonths(offset);
+    }
+    public static  LocalDateTime dayOfMonthl(Date date, long offset, TemporalAdjuster adjuster, int hour, int minute, int second) {
+        LocalDateTime localDateTime = date2Ldt(date);
+        return dayOfMonth(localDateTime,offset,adjuster,hour,minute,second);
+    }
     /*
-     * 获取 周几
      * */
-    public Date dayOfMonth(Date date, long monthOffset, TemporalAdjuster dayOfMonth, int hour, int minute, int second) {
+    public static Date dayOfMonth(Date date, long monthOffset, TemporalAdjuster dayOfMonth, int hour, int minute, int second) {
         LocalDateTime localDateTime = date2Ldt(date);
         return ldt2Date(localDateTime.with(dayOfMonth).withHour(hour).withMinute(minute).withSecond(second).plusMonths(monthOffset));
     }
@@ -656,10 +662,12 @@ public enum DateTimeUtils {
     /*
      * 获取 本年第？月
      * */
-    public int monthOfYear(Date date) {
+    public static int monthOfYear(Date date) {
         LocalDateTime localDateTime = date2Ldt(date);
         return localDateTime.getMonthValue();
     }
-
+    public static int monthOfYear(LocalDateTime localDateTime) {
+        return localDateTime.getMonthValue();
+    }
 
 }
