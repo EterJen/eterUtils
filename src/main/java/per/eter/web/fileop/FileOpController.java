@@ -10,9 +10,15 @@ import per.eter.utils.file.FileUtils;
 import per.eter.utils.file.SimpFile;
 import per.eter.utils.http.RequestTemplate;
 import per.eter.web.common.ResultInfo;
+import per.eter.web.fileop.bigfile.chunkupload.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 @RestController
@@ -23,6 +29,8 @@ public class FileOpController {
     FileUtils fileUtils;
     @Autowired
     RequestTemplate requestTemplate;
+    @Autowired
+    PseudostreamingService pseudostreamingService;
     @Autowired
     FileOpService fileOpService;
     @Value("${file.operation.host}")
@@ -52,6 +60,25 @@ public class FileOpController {
     @RequestMapping("/localRead/**")
     public void localRead(HttpServletRequest request, HttpServletResponse response) throws Exception {
         fileUtils.localRead(request, response);
+    }
+
+    @RequestMapping("/localRead4Base64Str")
+    @ResponseBody
+    public Result localRead4Base64Str(@RequestBody SimpFile simpFileQueryBean)throws Exception  {
+        String filePath = fileUtils.appWorkSpace + simpFileQueryBean.getRelativePath();
+        String content = fileUtils.encryptToBase64(filePath);
+
+        SimpFile simpFile = new SimpFile();
+        simpFile.setStringContent(content);
+
+        return Result.success(200,simpFile);
+    }
+
+
+
+    @RequestMapping("/processRequest")
+    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        pseudostreamingService.processRequest(request, response);
     }
 
     @RequestMapping("/remoteRead/**")

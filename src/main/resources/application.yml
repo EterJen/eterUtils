@@ -1,0 +1,17 @@
+spring:
+  profiles:
+    include: fileuptest
+
+  servlet:
+    multipart:
+      max-request-size: 5GB
+      max-file-size: 5GB
+
+
+
+app:
+  workspace: /home/eter/workspace/runData/jyj_cms/
+  bigFileRelativePath: bigFile/
+
+server:
+  port: 8083

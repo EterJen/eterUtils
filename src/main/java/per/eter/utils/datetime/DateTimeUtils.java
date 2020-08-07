@@ -33,6 +33,7 @@ public enum DateTimeUtils {
      */
     TIME("HH:mm:ss"),
 
+    TIME_H2m("H:mm"),
     /**
      * 时间格式 <code>[HHmmss]</code>
      */
@@ -62,6 +63,13 @@ public enum DateTimeUtils {
      * 日期时间格式 <code>[yyyy-MM-dd HH:mm:ss]</code>
      */
     DATE_TIME("yyyy-MM-dd HH:mm:ss"),
+
+    /**
+     * 日期时间格式 <code>[yyyy-MM-dd HH:mm:ss]</code>
+     */
+    DATE_TIME_y2m_ZH("yyyy年M月d日 H时m分"),
+    DATE_TIME_M2d_ZH("M月d日"),
+    DATE_TIME_d_ZH("d日"),
 
     /**
      * 日期时间格式 <code>[yyyyMMddHHmmss]</code>
@@ -619,23 +627,25 @@ public enum DateTimeUtils {
     /*
      * 获取 周几
      * */
-    public static  Date dayOfWeek(Date date, long weekOffset, TemporalAdjuster dayOfWeek, int hour, int minute, int second) {
+    public static Date dayOfWeek(Date date, long weekOffset, TemporalAdjuster dayOfWeek, int hour, int minute, int second) {
         return ldt2Date(dayOfWeek(date2Ldt(date), weekOffset, dayOfWeek, hour, minute, second));
     }
 
 
-    public static  LocalDateTime dayOfWeek(LocalDateTime localDateTime, long weekOffset, TemporalAdjuster dayOfWeek, int hour, int minute, int second) {
+    public static LocalDateTime dayOfWeek(LocalDateTime localDateTime, long weekOffset, TemporalAdjuster dayOfWeek, int hour, int minute, int second) {
         return localDateTime.with(dayOfWeek).withNano(0).withHour(hour).withMinute(minute).withSecond(second).plusWeeks(weekOffset);
     }
 
 
-    public static  LocalDateTime dayOfMonth(LocalDateTime localDateTime, long offset, TemporalAdjuster adjuster, int hour, int minute, int second) {
+    public static LocalDateTime dayOfMonth(LocalDateTime localDateTime, long offset, TemporalAdjuster adjuster, int hour, int minute, int second) {
         return localDateTime.with(adjuster).withNano(0).withHour(hour).withMinute(minute).withSecond(second).plusMonths(offset);
     }
-    public static  LocalDateTime dayOfMonthl(Date date, long offset, TemporalAdjuster adjuster, int hour, int minute, int second) {
+
+    public static LocalDateTime dayOfMonthl(Date date, long offset, TemporalAdjuster adjuster, int hour, int minute, int second) {
         LocalDateTime localDateTime = date2Ldt(date);
-        return dayOfMonth(localDateTime,offset,adjuster,hour,minute,second);
+        return dayOfMonth(localDateTime, offset, adjuster, hour, minute, second);
     }
+
     /*
      * */
     public static Date dayOfMonth(Date date, long monthOffset, TemporalAdjuster dayOfMonth, int hour, int minute, int second) {
@@ -653,7 +663,7 @@ public enum DateTimeUtils {
         return localDateTime.get(weekFields.weekOfYear());
     }
 
-    public static  int weekOfYear(LocalDateTime localDateTime) {
+    public static int weekOfYear(LocalDateTime localDateTime) {
         //使用DateTimeFormatter获取当前周数
         WeekFields weekFields = WeekFields.of(DayOfWeek.MONDAY, 1);
         return localDateTime.get(weekFields.weekOfYear());
@@ -666,6 +676,7 @@ public enum DateTimeUtils {
         LocalDateTime localDateTime = date2Ldt(date);
         return localDateTime.getMonthValue();
     }
+
     public static int monthOfYear(LocalDateTime localDateTime) {
         return localDateTime.getMonthValue();
     }

@@ -76,9 +76,9 @@ public class ExcelRenderTest {
         data.put("sts", students);
 
         // 模板路径和输出流
-        String templatePath = "d:\\jxls\\template.xlsx";
+        String templatePath = "/home/eter/workspace/virtualBOx/share/exclOut/template.xlsx";
 
-        JxlsTemplate jxlsTemplate = new JxlsTemplate(templatePath, "d:\\jxls\\out.xls", data);
+        JxlsTemplate jxlsTemplate = new JxlsTemplate(templatePath, "/home/eter/workspace/virtualBOx/share/exclOut/out.xls", data);
         jxlsTemplate.generate();
     }
 }

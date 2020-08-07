@@ -26,6 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 @Slf4j
@@ -37,7 +40,7 @@ public class FileUtils {
     @Value("${file.operation.host}")
     public String fileOpHost;
 
-    @Value("${app.workSpace}")
+    @Value("${app.workspace}")
     public String appWorkSpace;
 
     public static void download(FileExtend file, HttpServletResponse response) throws IOException {
@@ -104,6 +107,32 @@ public class FileUtils {
 
         System.out.println("耗时：" + (end - start) / 1000 + " s");
 
+    }
+
+    public String encryptToBase64(String filePath) {
+        if (filePath == null) {
+            return null;
+        }
+        try {
+            byte[] b = Files.readAllBytes(Paths.get(filePath));
+            return Base64.getEncoder().encodeToString(b);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public String decryptByBase64(String base64, String filePath) {
+        if (base64 == null && filePath == null) {
+            return "生成文件失败，请给出相应的数据。";
+        }
+        try {
+            Files.write(Paths.get(filePath), Base64.getDecoder().decode(base64), StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "指定路径下生成文件成功！";
     }
 
     /**

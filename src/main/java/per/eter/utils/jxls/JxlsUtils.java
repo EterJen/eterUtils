@@ -31,11 +31,11 @@ public class JxlsUtils {
         //获得配置
         JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator)transformer.getTransformationConfig().getExpressionEvaluator();
         //设置静默模式，不报警告
-        evaluator.getJexlEngine().setSilent(true);
+//        evaluator.getJexlEngine().setSilent(true);
         //函数强制，自定义功能
         Map<String, Object> funcs = new HashMap<String, Object>();
         funcs.put("jx", new JxlsUtils());    //添加自定义功能
-        evaluator.getJexlEngine().setFunctions(funcs);
+//        evaluator.getJexlEngine().setFunctions(funcs);
         //必须要这个，否者表格函数统计会错乱
         jxlsHelper.setUseFastFormulaProcessor(false).processTemplate(context, transformer);
         is.close();
