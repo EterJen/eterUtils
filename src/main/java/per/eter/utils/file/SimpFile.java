@@ -33,6 +33,7 @@ public class SimpFile {
     public static enum FileOperationResult {
         success,
         exception;
+
         private FileOperationResult() {
         }
     }
@@ -152,6 +153,12 @@ public class SimpFile {
     }
 
     public String getNameSuffix() {
+        if (StringUtils.isEmpty(nameSuffix) && !StringUtils.isEmpty(originalFilename)) {
+            int i = originalFilename.lastIndexOf(".");
+            if (i >= 0) {
+                this.setNameSuffix(originalFilename.substring(i + 1));
+            }
+        }
         return nameSuffix;
     }
 
@@ -161,7 +168,10 @@ public class SimpFile {
 
     public String getNameWithoutSuffix() {
         if (StringUtils.isEmpty(nameWithoutSuffix) && !StringUtils.isEmpty(originalFilename)) {
-            this.setNameWithoutSuffix(originalFilename.substring(0,originalFilename.lastIndexOf(".")));
+            int i = originalFilename.lastIndexOf(".");
+            if (i >= 0) {
+                this.setNameWithoutSuffix(originalFilename.substring(0,i));
+            }
         }
         return nameWithoutSuffix;
     }

@@ -91,9 +91,15 @@ public class FileOpController {
         fileUtils.remoteRead(simpFile, response);
     }
 
+
+
     @RequestMapping("/remoteUpload")
     public Map<String, SimpFile> remoteUpload(@RequestParam("files") MultipartFile[] multipartFiles, @RequestParam("relativePathPrefix") String relativePathPrefix) throws Exception {
         return fileUtils.remoteUpload(multipartFiles, relativePathPrefix);
+    }
+    @RequestMapping("/copy")
+    public SimpFile copy(SimpFile simpFile) throws Exception {
+        return fileUtils.copy(simpFile);
     }
 
     @RequestMapping("/remoteDownload")

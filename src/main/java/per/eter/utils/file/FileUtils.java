@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -39,6 +40,13 @@ public class FileUtils {
 
     @Value("${file.operation.host}")
     public String fileOpHost;
+
+    public static String fileSeparator;
+
+    @Value("${file.operation.fileSeparator:/}")
+    public void setFileSeparator(String fileSeparator) {
+        FileUtils.fileSeparator = fileSeparator;
+    }
 
     @Value("${app.workspace}")
     public String appWorkSpace;
@@ -149,7 +157,8 @@ public class FileUtils {
         }
         File targetFile = new File(target);
         if (!targetFile.exists()) {
-            throw new Exception("存放的目标路径：[" + target + "] 不存在...");
+            targetFile.mkdirs();
+//            throw new Exception("存放的目标路径：[" + target + "] 不存在...");
         }
 
         // 获取源文件夹下的文件夹或文件
@@ -157,7 +166,7 @@ public class FileUtils {
 
         for (File file : resourceFiles) {
 
-            File file1 = new File(targetFile.getAbsolutePath() + File.separator + resourceFile.getName());
+            File file1 = new File(targetFile.getAbsolutePath() + per.eter.utils.file.FileUtils.fileSeparator + resourceFile.getName());
             // 复制文件
             if (file.isFile()) {
                 System.out.println("文件" + file.getName());
@@ -166,7 +175,7 @@ public class FileUtils {
                 if (!file1.exists()) {
                     file1.mkdirs();
                 }
-                File targetFile1 = new File(file1.getAbsolutePath() + File.separator + file.getName());
+                File targetFile1 = new File(file1.getAbsolutePath() + per.eter.utils.file.FileUtils.fileSeparator + file.getName());
                 copyFile(file, targetFile1);
             }
             // 复制文件夹
@@ -259,6 +268,17 @@ public class FileUtils {
         return file;
     }
 
+
+    public static File createNewFile(String filePath) throws IOException {
+        File file = new File(filePath);
+        File parentFile = file.getParentFile();
+        if (!parentFile.exists()) {
+            parentFile.mkdirs();
+        }
+        file.createNewFile();
+        return file;
+    }
+
     public static FileType fileType(SimpFile simpFile) throws IOException {
         String path = simpFile.getPath();
         String suffix = path.substring(path.lastIndexOf(".") + 1, path.length());
@@ -308,10 +328,14 @@ public class FileUtils {
 
 
     public Map<String, SimpFile> remoteUpload(MultipartFile[] multipartFiles, String relativePathPrefix) throws IOException {
-        String tempWorkSpace = appWorkSpace + SimpFile.commonSeparator + "remoteUploadTemp";
+        String tempWorkSpace = appWorkSpace + SimpFile.commonSeparator + "temp";
 
         Calendar currentCalendar = Calendar.getInstance();
-        relativePathPrefix = relativePathPrefix + SimpFile.commonSeparator + currentCalendar.get(Calendar.YEAR) + "_" + (currentCalendar.get(Calendar.MONTH) + 1) + "_" + currentCalendar.get(Calendar.DAY_OF_MONTH);
+        if (null == relativePathPrefix) {
+            relativePathPrefix = "year" + currentCalendar.get(Calendar.YEAR) + SimpFile.commonSeparator + "month" + (currentCalendar.get(Calendar.MONTH) + 1) + SimpFile.commonSeparator + "day" + currentCalendar.get(Calendar.DAY_OF_MONTH);
+        } else {
+            relativePathPrefix = relativePathPrefix + SimpFile.commonSeparator + "year" + currentCalendar.get(Calendar.YEAR) + SimpFile.commonSeparator + "month" + (currentCalendar.get(Calendar.MONTH) + 1) + SimpFile.commonSeparator + "day" + currentCalendar.get(Calendar.DAY_OF_MONTH);
+        }
 
 
         Map<String, SimpFile> simpleFiles = new HashMap<>();
@@ -326,10 +350,10 @@ public class FileUtils {
             String originalFilename = multipartFile.getOriginalFilename();
             String fileExt = originalFilename.substring(originalFilename.lastIndexOf("."), originalFilename.length());
 
-            String tempName = "" + UUID.randomUUID();
-            File file = makeSureFileExists(tempWorkSpace + SimpFile.commonSeparator + tempName);
-            tempfiles.add(file);
+            String tempName = "file" + currentCalendar.getTimeInMillis();
+            File file = createNewFile(tempWorkSpace + SimpFile.commonSeparator + tempName);
             multipartFile.transferTo(file);
+            tempfiles.add(file);
 
             form.add("files", new FileSystemResource(file));
             SimpFile simpFile = new SimpFile();
@@ -388,11 +412,11 @@ public class FileUtils {
 
         ResultInfo<SimpFile> resultInfo = JSON.parseObject(responseEntity.getBody(), new TypeReference<ResultInfo<SimpFile>>() {
         });
-        return  resultInfo.getBeanMap();
+        return resultInfo.getBeanMap();
     }
 
     public void remoteRead(SimpFile simpFile, HttpServletResponse response) throws Exception {
-        restTemplate.execute(fileOpHost + FileOpController.localReadUri + simpFile.getRelativePath(), HttpMethod.GET, null, clientHttpResponse -> {
+        restTemplate.execute(fileOpHost + FileOpController.localReadUri +"/"+ simpFile.getRelativePath(), HttpMethod.GET, null, clientHttpResponse -> {
 
             String downloadName = StringUtils.changeEncode(simpFile.getDownloadName(), "UTF-8");
             log.info("下载文件名称: {} ", downloadName);
@@ -408,5 +432,31 @@ public class FileUtils {
             outputStream.close();
             return null;
         });
+    }
+
+    public SimpFile copy(SimpFile simpFile) throws IOException {
+        SimpFile descSimpFile = new SimpFile();
+        FileChannel input = null;
+        FileChannel output = null;
+        Calendar currentCalendar = Calendar.getInstance();
+
+
+        try {
+            input = new FileInputStream(new File(appWorkSpace + simpFile.getPath())).getChannel();
+            String relativePath = simpFile.getRelativePath() + SimpFile.commonSeparator + "year" + currentCalendar.get(Calendar.YEAR) + SimpFile.commonSeparator + "month" + (currentCalendar.get(Calendar.MONTH) + 1) + SimpFile.commonSeparator + "day" + currentCalendar.get(Calendar.DAY_OF_MONTH) + SimpFile.commonSeparator + "file" + currentCalendar.getTimeInMillis();
+            descSimpFile.setRelativePath(relativePath);
+            descSimpFile.setOriginalFilename(simpFile.getOriginalFilename());
+            String destPath = appWorkSpace + relativePath;
+            File file = makeSureFileExists(destPath);
+            output = new FileOutputStream(file).getChannel();
+            output.transferFrom(input, 0, input.size());
+        } catch (Exception e) {
+            log.error("error occur while copy{}", e.getMessage());
+        } finally {
+            input.close();
+            output.close();
+        }
+        return descSimpFile;
+
     }
 }
