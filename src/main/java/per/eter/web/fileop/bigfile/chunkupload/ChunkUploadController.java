@@ -34,6 +34,7 @@ public class ChunkUploadController {
     @PostMapping("/part")
     @ResponseBody
     public Result partUpload(HttpServletRequest request, HttpServletResponse response, String guid, Integer chunk, MultipartFile file, Integer chunks) {
+        File tempPartFile = null;
         try {
             boolean isMultipart = ServletFileUpload.isMultipartContent(request);
             if (isMultipart) {
@@ -44,14 +45,19 @@ public class ChunkUploadController {
                     partFileDir.mkdirs();
                 }
                 // 分片处理时，前台会多次调用上传接口，每次都会上传文件的一部分到后台
-                File tempPartFile = new File(partFileDir, guid + "_" + chunk + ".part");
-                FileUtils.copyInputStreamToFile(file.getInputStream(), tempPartFile);
+                tempPartFile = new File(partFileDir, guid + "_" + chunk + ".part");
+                if (!tempPartFile.exists()) {
+                    FileUtils.copyInputStreamToFile(file.getInputStream(), tempPartFile);
+                }
             }
 
         } catch (Exception e) {
+            if (null != tempPartFile && tempPartFile.exists()) {
+                tempPartFile.delete();
+            }
             return Result.failMessage(400, e.getMessage());
         }
-        return Result.successMessage(200, "上次成功");
+        return Result.successMessage(200, "上传成功");
     }
 
     @RequestMapping("merge")

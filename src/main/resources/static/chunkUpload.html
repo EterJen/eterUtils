@@ -54,7 +54,7 @@
             form.append("chunk", chunk);        //当前是第几片
             //Ajax提交
             $.ajax({
-                url: "http://localhost:8083/fileOperation/trustedRequest/chunkUpload/part",
+                url: "http://localhost:8083/jyjcms/fileOperation/trustedRequest/chunkUpload/part",
                 type: "POST",
                 data: form,
                 async: true,        //异步
@@ -76,7 +76,7 @@
             formMerge.append("guid", GUID);
             formMerge.append("fileName", name);
             $.ajax({
-                url: "http://localhost:8083/fileOperation/trustedRequest/chunkUpload/merge",
+                url: "http://localhost:8083/jyjcms/fileOperation/trustedRequest/chunkUpload/merge",
                 type: "POST",
                 data: formMerge,
                 processData: false,  //很重要，告诉jquery不要对form进行处理

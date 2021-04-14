@@ -6,7 +6,7 @@
 
     <groupId>per.eter</groupId>
     <artifactId>utils</artifactId>
-    <version>1.4.11</version>
+    <version>1.4.12</version>
 <!--    <version>1.0-SNAPSHOT</version>-->
     <packaging>jar</packaging>
 

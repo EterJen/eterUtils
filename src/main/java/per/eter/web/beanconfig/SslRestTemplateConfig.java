@@ -14,6 +14,16 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
+/*
+使用的地方注入bean替换RestTemplate
+  @Bean
+    @Primary
+    public RestTemplate restTemplate() {
+        SslRestTemplateConfig sslRestTemplateConfig = new SslRestTemplateConfig();
+        RestTemplate restTemplate = sslRestTemplateConfig.restTemplate();
+        return restTemplate;
+    }
+* */
 
 @Slf4j
 public class SslRestTemplateConfig {

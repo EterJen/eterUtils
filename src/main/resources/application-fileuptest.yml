@@ -1,8 +1,8 @@
 server:
-  port: 8081
+  port: 8083
   servlet:
     context-path: /jyjcms
 
 file:
   operation:
-    host: http://172.17.12.1:8081/jyjcms
+    host: http://172.17.12.1:8083/jyjcms
