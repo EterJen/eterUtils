@@ -25,19 +25,26 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.regex.Matcher;
+
+import static java.nio.file.StandardOpenOption.READ;
 
 @Slf4j
 @Component
 public class FileUtils {
     @Resource
     RestTemplate restTemplate;
-
+    private static final int BUFFER_LENGTH = 1024 * 16;
     @Value("${file.operation.host}")
     public String fileOpHost;
 
@@ -158,7 +165,7 @@ public class FileUtils {
         File targetFile = new File(target);
         if (!targetFile.exists()) {
             targetFile.mkdirs();
-//            throw new Exception("存放的目标路径：[" + target + "] 不存在...");
+            //            throw new Exception("存放的目标路径：[" + target + "] 不存在...");
         }
 
         // 获取源文件夹下的文件夹或文件
@@ -327,7 +334,7 @@ public class FileUtils {
     }
 
 
-    public Map<String, SimpFile> remoteUpload(MultipartFile[] multipartFiles, String relativePathPrefix) throws IOException {
+    public Map<String, SimpFile> remoteUpload(String appWorkSpace, MultipartFile[] multipartFiles, String relativePathPrefix) throws IOException {
         String tempWorkSpace = appWorkSpace + SimpFile.commonSeparator + "temp";
 
         Calendar currentCalendar = Calendar.getInstance();
@@ -341,7 +348,8 @@ public class FileUtils {
         Map<String, SimpFile> simpleFiles = new HashMap<>();
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
+        headers.add("Accept", MediaType.APPLICATION_JSON_UTF8_VALUE.toString());
+        //headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         headers.setContentType(MediaType.parseMediaType("multipart/form-data;charset=UTF-8"));
         MultiValueMap<String, Object> form = new LinkedMultiValueMap<>();
 
@@ -381,6 +389,12 @@ public class FileUtils {
             result.put(value.getOriginalFilename(), value);
         }
         return result;
+
+
+    }
+
+    public Map<String, SimpFile> remoteUpload(MultipartFile[] multipartFiles, String relativePathPrefix) throws IOException {
+        return remoteUpload(this.appWorkSpace, multipartFiles, relativePathPrefix);
     }
 
     public Map<String, SimpFile> remoteUpload(SimpFile[] simpFiles, String relativePathPrefix) throws IOException {
@@ -416,7 +430,7 @@ public class FileUtils {
     }
 
     public void remoteRead(SimpFile simpFile, HttpServletResponse response) throws Exception {
-        restTemplate.execute(fileOpHost + FileOpController.localReadUri +"/"+ simpFile.getRelativePath(), HttpMethod.GET, null, clientHttpResponse -> {
+        restTemplate.execute(fileOpHost + FileOpController.localReadUri + "/" + simpFile.getRelativePath(), HttpMethod.GET, null, clientHttpResponse -> {
 
             String downloadName = StringUtils.changeEncode(simpFile.getDownloadName(), "UTF-8");
             log.info("下载文件名称: {} ", downloadName);
@@ -432,6 +446,47 @@ public class FileUtils {
             outputStream.close();
             return null;
         });
+    }
+
+    public void imgRead(SimpFile simpFile, HttpServletResponse response) throws Exception {
+        Path video = Paths.get(appWorkSpace, simpFile.getRelativePath());
+
+        int length = (int) Files.size(video);
+        int start = 0;
+        int end = length - 1;
+        int contentLength = end - start + 1;
+
+        response.reset();
+        response.setBufferSize(BUFFER_LENGTH);
+        response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+        response.setHeader("Accept-Ranges", "bytes");
+        response.setHeader("Content-Range", String.format("bytes %s-%s/%s", start, end, length));
+        response.setHeader("Content-Length", String.format("%s", contentLength));
+        response.setContentType(Files.probeContentType(video));
+
+        /*开关*/
+        response.setHeader("Pragma", "public");
+        response.setHeader("Cache-Control", "public");
+        /*校验*/
+        response.setDateHeader("Last-Modified", Files.getLastModifiedTime(video).toMillis());
+
+
+        int bytesRead;
+        int bytesLeft = contentLength;
+        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_LENGTH);
+
+        try (SeekableByteChannel input = Files.newByteChannel(video, READ);
+             OutputStream output = response.getOutputStream()) {
+
+            input.position(start);
+
+            while ((bytesRead = input.read(buffer)) != -1 && bytesLeft > 0) {
+                buffer.clear();
+                output.write(buffer.array(), 0, bytesLeft < bytesRead ? bytesLeft : bytesRead);
+                bytesLeft -= bytesRead;
+            }
+        }
+
     }
 
     public SimpFile copy(SimpFile simpFile) throws IOException {

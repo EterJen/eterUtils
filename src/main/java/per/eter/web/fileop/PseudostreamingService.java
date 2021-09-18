@@ -12,7 +12,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import static java.nio.file.StandardOpenOption.READ;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +40,7 @@ public class PseudostreamingService {
         int end = length - 1;
 
         String range = request.getHeader("Range");
-        range=range==null?"":range;
+        range = range == null ? "" : range;
         Matcher matcher = RANGE_PATTERN.matcher(range);
 
         if (matcher.matches()) {

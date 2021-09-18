@@ -39,6 +39,7 @@ public class FileOpController {
     public static String localFile2StringUri = "/fileOperation/trustedRequest/file2String";
     public static String localString2FileUri = "/fileOperation/trustedRequest/string2File";
     public static String localReadUri = "/fileOperation/trustedRequest/localRead";
+    public static String imgReadUri = "/fileOperation/trustedRequest/imgRead";
     public static String localUploadUri = "/fileOperation/trustedRequest/localUpload";
     public static String remoteReadUri = "/fileOperation/trustedRequest/remoteRead";
 
@@ -113,6 +114,15 @@ public class FileOpController {
         }
         fileUtils.remoteRead(simpFile, response);
     }
+    @RequestMapping("/imgRead/**")
+    public void imgRead(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        SimpFile simpFile = new SimpFile();
+        String servletPath = request.getServletPath();
+        simpFile.setRelativePath(servletPath.replace(FileOpController.imgReadUri, ""));
+
+        fileUtils.imgRead(simpFile, response);
+    }
+
 
     @RequestMapping("/localUpload")
     public ResultInfo<SimpFile> localUpload(@RequestParam("files") MultipartFile[] files, @RequestParam("simpleFilesJsonStr") String simpleFilesJsonStr) throws Exception {
